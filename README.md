@@ -167,6 +167,15 @@ pip install -r requirements.txt
 docker build -t fake-job-detector .
 ```
 
+Production image includes runtime files only:
+
+- `app.py`
+- `main.py`
+- `model/`
+- pinned Python dependencies from `requirements.txt`
+
+Training dataset and local virtual environments are excluded from Docker context via `.dockerignore`.
+
 ## Deployment
 
 Repository is best deployed on Render as **two Docker web services**:
@@ -256,6 +265,14 @@ Create two web services from same repo using Docker runtime.
 - Required environment variables:
   - `API_BASE_URL=https://<your-api-service>.onrender.com`
 
+### Docker Notes for Render
+
+- Render does not need manual build command for Docker runtime.
+- Backend binds `PORT` through Uvicorn command in `render.yaml`.
+- Frontend binds `PORT` through Streamlit command in `render.yaml`.
+- Docker image itself keeps default combined command for local container usage, but Render overrides that command per service.
+- `.dockerignore` excludes local virtual environments, caches, Git metadata, and `data/fake_job_postings.csv` to reduce build context size.
+
 ### Health Check
 
 - API: `GET /health`
@@ -274,7 +291,7 @@ Create two web services from same repo using Docker runtime.
 - MySQL history broken:
   - Set `ENABLE_DB_LOGGING=true` and provide all `MYSQL_*` variables.
 - Large Docker builds:
-  - Model artifacts and dataset are committed, so first build can take longer.
+  - Model artifacts are shipped intentionally, but training dataset is excluded from Docker context by `.dockerignore`.
 
 ## Usage
 
