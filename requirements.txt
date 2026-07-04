@@ -8,3 +8,4 @@ joblib==1.5.3
 mysql-connector-python==9.6.0
 requests==2.33.0
 imbalanced-learn==0.14.2
+pydantic>=2.9.0

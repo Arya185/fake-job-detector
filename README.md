@@ -196,7 +196,7 @@ Repository includes [render.yaml](/Users/aryapatel/arya/Programming/code/fake-jo
 - Service type: Web Service
 - Runtime: Docker
 - Dockerfile path: `./Dockerfile`
-- Docker command: `/bin/sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"`
+- Docker command: `python -m uvicorn main:app --host 0.0.0.0 --port 10000`
 - Health check path: `/health`
 
 #### Frontend service
@@ -204,7 +204,7 @@ Repository includes [render.yaml](/Users/aryapatel/arya/Programming/code/fake-jo
 - Service type: Web Service
 - Runtime: Docker
 - Dockerfile path: `./Dockerfile`
-- Docker command: `/bin/sh -c "streamlit run app.py --server.port ${PORT:-10000} --server.address 0.0.0.0 --server.headless true"`
+- Docker command: `python -m streamlit run app.py --server.port 10000 --server.address 0.0.0.0 --server.headless true`
 - Health check path: `/`
 - Environment variable: `API_BASE_URL` wired from API service `RENDER_EXTERNAL_URL`
 
@@ -247,7 +247,7 @@ Create two web services from same repo using Docker runtime.
 - Root Directory: blank
 - Dockerfile Path: `./Dockerfile`
 - Build Command: none
-- Start Command / Docker Command: `/bin/sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"`
+- Start Command / Docker Command: `python -m uvicorn main:app --host 0.0.0.0 --port 10000`
 - Auto Deploy: `Yes`
 - Health Check Path: `/health`
 - Required environment variables:
@@ -259,7 +259,7 @@ Create two web services from same repo using Docker runtime.
 - Root Directory: blank
 - Dockerfile Path: `./Dockerfile`
 - Build Command: none
-- Start Command / Docker Command: `/bin/sh -c "streamlit run app.py --server.port ${PORT:-10000} --server.address 0.0.0.0 --server.headless true"`
+- Start Command / Docker Command: `python -m streamlit run app.py --server.port 10000 --server.address 0.0.0.0 --server.headless true`
 - Auto Deploy: `Yes`
 - Health Check Path: `/`
 - Required environment variables:
