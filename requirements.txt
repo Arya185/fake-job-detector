@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+streamlit
+scikit-learn
+pandas
+numpy
+joblib
+python-multipart
+mysql-connector-python
+requests
+imbalanced-learn
