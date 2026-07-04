@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: fake-job-detector-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerCommand: /bin/sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"
+    healthCheckPath: /health
+    envVars:
+      - key: ENABLE_DB_LOGGING
+        value: "false"
+
+  - type: web
+    name: fake-job-detector-app
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerCommand: /bin/sh -c "streamlit run app.py --server.port ${PORT:-10000} --server.address 0.0.0.0 --server.headless true"
+    healthCheckPath: /
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          name: fake-job-detector-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL

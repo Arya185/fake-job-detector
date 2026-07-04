@@ -169,40 +169,45 @@ docker build -t fake-job-detector .
 
 ## Deployment
 
-Repository supports Docker-first deployment best. Single container runs FastAPI on port `8000` and Streamlit on port `8501`.
+Repository is best deployed on Render as **two Docker web services**:
 
-### Suitable platforms
+- `fake-job-detector-api` for FastAPI
+- `fake-job-detector-app` for Streamlit
 
-- Render
-- Railway
-- Any VM or container host that accepts Docker images
+Reason: Render forwards public HTTP traffic to only one port per web service, while this project has separate frontend and backend processes. Render documents one public port per web service and recommends binding public HTTP server to `PORT`: [Web Services](https://render.com/docs/web-services). Blueprint support and cross-service environment variable wiring are documented here: [Blueprint YAML Reference](https://render.com/docs/blueprint-spec).
 
-### Build command
+### Included Render Blueprint
 
-```bash
-docker build -t fake-job-detector .
-```
+Repository includes [render.yaml](/Users/aryapatel/arya/Programming/code/fake-job-detector/render.yaml) with both services preconfigured.
 
-### Start command
+### Render Service Layout
 
-Container default command:
+#### API service
 
-```bash
-sh -c "uvicorn main:app --host 0.0.0.0 --port 8000 & streamlit run app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true"
-```
+- Service type: Web Service
+- Runtime: Docker
+- Dockerfile path: `./Dockerfile`
+- Docker command: `/bin/sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"`
+- Health check path: `/health`
 
-### Exposed ports
+#### Frontend service
 
-- `8000` for FastAPI
-- `8501` for Streamlit
+- Service type: Web Service
+- Runtime: Docker
+- Dockerfile path: `./Dockerfile`
+- Docker command: `/bin/sh -c "streamlit run app.py --server.port ${PORT:-10000} --server.address 0.0.0.0 --server.headless true"`
+- Health check path: `/`
+- Environment variable: `API_BASE_URL` wired from API service `RENDER_EXTERNAL_URL`
 
 ### Required production configuration
 
-- Set `API_BASE_URL` to reachable FastAPI URL if frontend and API run separately
-- Keep `MODEL_DIR` pointed at deployed `model/` directory
+- Keep `API_BASE_URL` pointed at deployed API service URL
+- Keep `MODEL_DIR` pointed at deployed `model/` directory if overridden
 - Set `ENABLE_DB_LOGGING=true` only if MySQL database exists and contains required table
 
-### MySQL requirement for analytics history
+### Optional MySQL configuration
+
+Base Render deployment does **not** require database.
 
 If history enabled, database must expose `predictions` table with columns used by code:
 
@@ -211,24 +216,65 @@ If history enabled, database must expose `predictions` table with columns used b
 - `fraud_probability`
 - `created_at`
 
-### Domain configuration
+### Render Deployment Steps
 
-- Point domain or platform URL to Streamlit service
-- Expose FastAPI only if external API access needed
+#### Option 1: Blueprint deploy
 
-### Common deployment issues
+1. Push repository with `render.yaml`.
+2. In Render dashboard, choose **New > Blueprint**.
+3. Connect GitHub repository.
+4. Render reads `render.yaml` and creates both services.
+5. Deploy.
 
-- Streamlit cannot reach API because `API_BASE_URL` still points to localhost
-- History page empty because DB logging disabled or MySQL variables missing
-- Training script fails if `imbalanced-learn` not installed
-- Container platform exposes only one port; in that case split API and frontend into separate services or front with reverse proxy
+#### Option 2: Manual dashboard setup
 
-### Post-deployment verification
+Create two web services from same repo using Docker runtime.
 
-1. Open Streamlit home page.
-2. Submit sample job text and confirm prediction returns.
-3. Check `GET /health`.
-4. If MySQL enabled, confirm `/history` returns rows after predictions.
+### Exact Render Settings
+
+#### `fake-job-detector-api`
+
+- Runtime: `Docker`
+- Root Directory: blank
+- Dockerfile Path: `./Dockerfile`
+- Build Command: none
+- Start Command / Docker Command: `/bin/sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"`
+- Auto Deploy: `Yes`
+- Health Check Path: `/health`
+- Required environment variables:
+  - `ENABLE_DB_LOGGING=false`
+
+#### `fake-job-detector-app`
+
+- Runtime: `Docker`
+- Root Directory: blank
+- Dockerfile Path: `./Dockerfile`
+- Build Command: none
+- Start Command / Docker Command: `/bin/sh -c "streamlit run app.py --server.port ${PORT:-10000} --server.address 0.0.0.0 --server.headless true"`
+- Auto Deploy: `Yes`
+- Health Check Path: `/`
+- Required environment variables:
+  - `API_BASE_URL=https://<your-api-service>.onrender.com`
+
+### Health Check
+
+- API: `GET /health`
+- Frontend: `GET /`
+
+### Troubleshooting
+
+- Frontend cannot analyze postings:
+  - Check `API_BASE_URL` points to deployed API URL, not localhost.
+- API deploy fails health check:
+  - Check `/health` returns `200`.
+- Frontend deploy loops or shows port errors:
+  - Check Streamlit command uses `--server.port ${PORT:-10000}` and `--server.address 0.0.0.0`.
+- History tab empty:
+  - Expected when `ENABLE_DB_LOGGING=false`.
+- MySQL history broken:
+  - Set `ENABLE_DB_LOGGING=true` and provide all `MYSQL_*` variables.
+- Large Docker builds:
+  - Model artifacts and dataset are committed, so first build can take longer.
 
 ## Usage
 
