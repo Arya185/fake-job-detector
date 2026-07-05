@@ -1,412 +1,275 @@
-# Fake Job Detector
+# 🛡️ FraudScan AI — Fake Job Detector
 
-Fake Job Detector identifies potentially fraudulent job postings with machine learning. Repository includes FastAPI inference API, Streamlit web interface, model training pipeline, Docker setup, and optional MySQL-backed prediction history.
+[![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.135.3-green.svg)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.55.0-red.svg)](https://streamlit.io/)
+[![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.8.0-orange.svg)](https://scikit-learn.org/)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](#license)
 
-## Features
+An AI-powered web application and REST API designed to detect fraudulent job postings using machine learning. It protects job seekers from employment scams by identifying red flags and estimating the likelihood of fraud in job descriptions.
 
-- Detects fake vs real job postings from free-form text input
-- Returns fraud probability and confidence score
-- Highlights regex-based scam red flags in submitted text
-- Shows analytics dashboard for recent prediction history
-- Trains Random Forest model on combined job posting text fields
-- Ships pretrained model artifacts for local inference
-- Supports containerized deployment with FastAPI and Streamlit in one service
-- Supports optional MySQL logging for prediction history
+🔗 **Live Application URL:** [https://fake-job-detector-app-qa6q.onrender.com/](https://fake-job-detector-app-qa6q.onrender.com/)
 
-## Tech Stack
+---
+
+## 📌 Overview
+
+Employment scams are on the rise, targeting vulnerable job seekers. This project solves that problem by providing an automated tool to scan and evaluate job descriptions. 
+
+*   **What it does:** Classifies job postings into "Real" or "Fake" based on text content.
+*   **How it works:** Uses natural language processing (NLP) to vectorize job details and runs a machine learning classifier to calculate fraud risk.
+*   **Why it is useful:** Instantly flags potential scams, highlights known fraud-like text patterns, and provides an analytics dashboard for tracking scans.
+
+---
+
+## 🚀 Live Demo
+
+Access the active frontend deployed on Render:
+👉 **[FraudScan AI Web App](https://fake-job-detector-app-qa6q.onrender.com/)**
+
+---
+
+## ⚡ Features
+
+*   **Fake Job Detection:** Paste any job title, requirements, or descriptions to check for fraud risk.
+*   **AI/ML Prediction:** Powered by a Random Forest Classifier trained on combined text fields (title, company profile, description, requirements, benefits).
+*   **Confidence & Risk Meter:** Displays the raw probability percentage of fraud alongside a confidence rating.
+*   **Heuristic Red Flags:** Scans the text using regex rules to extract common scam patterns (e.g., unrealistic salary claims, urgency tactics, requests for bank details, WhatsApp-only contact).
+*   **Interactive Analytics Dashboard:** Visualizes real-time distribution charts, average fraud risk, and recent prediction histories.
+*   **Dual-Service API Integration:** Built as decoupled frontend (Streamlit) and backend (FastAPI) applications that communicate over REST.
+*   **Optional Persistent Database Logging:** Saves predictions to an external MySQL database for analytics tracking when logging is enabled.
+
+---
+
+## 🛠️ Tech Stack
+
+### Languages & Core Runtimes
+*   **Python 3.11** - Main programming language.
+*   **HTML5 / CSS3** - Custom styling embedded in Streamlit.
 
 ### Frontend
+*   **Streamlit (v1.55.0)** - Interactive UI for the detector and analytics dashboard.
+*   **Requests (v2.33.0)** - Handles HTTP calls to the FastAPI backend.
+*   **Pandas & NumPy** - Data handling and visualization for the dashboard.
 
-- Streamlit
-- Custom HTML/CSS inside Streamlit
+### Backend (REST API)
+*   **FastAPI (v0.135.3)** - High-performance backend API framework.
+*   **Uvicorn (v0.44.0)** - ASGI server process to run FastAPI.
+*   **Pydantic (v2.9.2)** - Data validation and request payload enforcement.
 
-### Backend
-
-- FastAPI
-- Uvicorn
-- Pydantic
+### Machine Learning
+*   **scikit-learn (v1.8.0)** - TF-IDF feature extraction and Random Forest model training.
+*   **imbalanced-learn (v0.14.2)** - Handles class imbalance using SMOTE (Synthetic Minority Over-sampling Technique).
+*   **joblib (v1.5.3)** - Serializes and loads pre-trained model files.
 
 ### Database
+*   **MySQL** - Stores predictions (optional history log).
+*   **mysql-connector-python (v9.6.0)** - Python driver for MySQL connections.
 
-- MySQL via `mysql-connector-python` for optional prediction logging
+### Deployment & DevOps
+*   **Docker** - Standardized multi-stage containers based on `python:3.11-slim`.
+*   **Render** - Deployed as decoupled Docker services (API + Web Frontend).
 
-### AI/ML
+---
 
-- scikit-learn
-- imbalanced-learn (SMOTE)
-- pandas
-- numpy
-- joblib
-
-### Deployment
-
-- Docker
-- Python 3.11 slim base image
-
-## Project Structure
+## 📂 Project Structure
 
 ```text
 fake-job-detector/
-├── app.py
-├── main.py
-├── train.py
-├── preprocess.py
-├── requirements.txt
-├── Dockerfile
-├── .env.example
+├── .dockerignore         # Excludes virtual environments and training datasets from builds
+├── .env.example          # Template configuration file for environment variables
+├── .gitignore            # Git ignore file
+├── Dockerfile            # Multi-service production Docker configuration
+├── README.md             # Project documentation (this file)
+├── app.py                # Streamlit web application code
+├── main.py               # FastAPI backend router and prediction service
+├── preprocess.py         # Text preprocessing helper functions
+├── render.yaml           # Render Blueprint specification for multi-service deployment
+├── requirements.txt      # Python dependencies manifest
+├── train.py              # Machine learning training pipeline
 ├── data/
-│   └── fake_job_postings.csv
-├── model/
-│   ├── fake_job_detector.pkl
-│   ├── random_forest_model.pkl
-│   └── tfidf_vectorizer.pkl
-└── README.md
+│   └── fake_job_postings.csv  # ~50MB raw training dataset
+└── model/
+    ├── fake_job_detector.pkl  # Retained baseline model (unused)
+    ├── random_forest_model.pkl # Active trained Random Forest classifier
+    └── tfidf_vectorizer.pkl   # Active TF-IDF Vectorizer
 ```
 
-## Installation
+---
+
+## ⚙️ Installation & Local Setup
 
 ### Prerequisites
+*   Python 3.11 installed.
+*   *Optional:* A MySQL instance (only required if database logging is enabled).
 
-- Python 3.11 recommended
-- `pip`
-- Optional: MySQL server for prediction history
-- Optional: Docker
-
-### Local setup
-
-1. Clone repository:
-
-   ```bash
-   git clone https://github.com/Arya185/fake-job-detector.git
-   cd fake-job-detector
-   ```
-
-2. Create virtual environment:
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Configure environment variables:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-5. Update `.env` values if you want MySQL-backed history.
-
-## Environment Variables
-
-All runtime variables derived from code:
-
-```env
-API_BASE_URL=http://127.0.0.1:8000
-MODEL_DIR=./model
-ENABLE_DB_LOGGING=false
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=your_mysql_password
-MYSQL_DATABASE=fake_job_detector
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Arya185/fake-job-detector.git
+cd fake-job-detector
 ```
 
-### Variable notes
-
-- `API_BASE_URL`: Base URL Streamlit uses for FastAPI requests
-- `MODEL_DIR`: Directory containing `tfidf_vectorizer.pkl` and `random_forest_model.pkl`
-- `ENABLE_DB_LOGGING`: Set `true` to persist predictions and enable analytics history
-- `MYSQL_*`: Required only when `ENABLE_DB_LOGGING=true`
-
-## Running Project
-
-### Development
-
-Run FastAPI:
-
+### 2. Configure Environment Variables
+Create your environment configuration file from the template:
 ```bash
-uvicorn main:app --reload
+cp .env.example .env
 ```
+*(By default, database logging is disabled, so you do not need to configure MySQL credentials to run locally.)*
 
-Run Streamlit in another terminal:
-
+### 3. Create a Virtual Environment & Install Dependencies
 ```bash
-streamlit run app.py
-```
-
-App URLs:
-
-- Streamlit UI: `http://127.0.0.1:8501`
-- FastAPI API: `http://127.0.0.1:8000`
-- API health check: `http://127.0.0.1:8000/health`
-
-### Production-style local run with Docker
-
-```bash
-docker build -t fake-job-detector .
-docker run --rm -p 8000:8000 -p 8501:8501 --env-file .env fake-job-detector
-```
-
-## Build
-
-### Python environment build
-
-```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Docker build
-
+### 4. Run the Backend API
+Start the FastAPI server on port 8000:
 ```bash
-docker build -t fake-job-detector .
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
 ```
+Verify the API is active by visiting `http://localhost:8000/health` in your browser.
 
-Production image includes runtime files only:
-
-- `app.py`
-- `main.py`
-- `model/`
-- pinned Python dependencies from `requirements.txt`
-
-Training dataset and local virtual environments are excluded from Docker context via `.dockerignore`.
-
-## Deployment
-
-Repository is best deployed on Render as **two Docker web services**:
-
-- `fake-job-detector-api` for FastAPI
-- `fake-job-detector-app` for Streamlit
-
-Reason: Render forwards public HTTP traffic to only one port per web service, while this project has separate frontend and backend processes. Render documents one public port per web service and recommends binding public HTTP server to `PORT`: [Web Services](https://render.com/docs/web-services). Blueprint support and cross-service environment variable wiring are documented here: [Blueprint YAML Reference](https://render.com/docs/blueprint-spec).
-
-### Included Render Blueprint
-
-Repository includes [render.yaml](/Users/aryapatel/arya/Programming/code/fake-job-detector/render.yaml) with both services preconfigured.
-
-### Render Service Layout
-
-#### API service
-
-- Service type: Web Service
-- Runtime: Docker
-- Dockerfile path: `./Dockerfile`
-- Docker command: `python -m uvicorn main:app --host 0.0.0.0 --port 10000`
-- Health check path: `/health`
-
-#### Frontend service
-
-- Service type: Web Service
-- Runtime: Docker
-- Dockerfile path: `./Dockerfile`
-- Docker command: `python -m streamlit run app.py --server.port 10000 --server.address 0.0.0.0 --server.headless true`
-- Health check path: `/`
-- Environment variable: `API_BASE_URL` wired from API service `RENDER_EXTERNAL_URL`
-
-### Required production configuration
-
-- Keep `API_BASE_URL` pointed at deployed API service URL
-- Keep `MODEL_DIR` pointed at deployed `model/` directory if overridden
-- Set `ENABLE_DB_LOGGING=true` only if MySQL database exists and contains required table
-
-### Optional MySQL configuration
-
-Base Render deployment does **not** require database.
-
-If history enabled, database must expose `predictions` table with columns used by code:
-
-- `input_text`
-- `prediction`
-- `fraud_probability`
-- `created_at`
-
-### Render Deployment Steps
-
-#### Option 1: Blueprint deploy
-
-1. Push repository with `render.yaml`.
-2. In Render dashboard, choose **New > Blueprint**.
-3. Connect GitHub repository.
-4. Render reads `render.yaml` and creates both services.
-5. Deploy.
-
-#### Option 2: Manual dashboard setup
-
-Create two web services from same repo using Docker runtime.
-
-### Exact Render Settings
-
-#### `fake-job-detector-api`
-
-- Runtime: `Docker`
-- Root Directory: blank
-- Dockerfile Path: `./Dockerfile`
-- Build Command: none
-- Start Command / Docker Command: `python -m uvicorn main:app --host 0.0.0.0 --port 10000`
-- Auto Deploy: `Yes`
-- Health Check Path: `/health`
-- Required environment variables:
-  - `ENABLE_DB_LOGGING=false`
-
-#### `fake-job-detector-app`
-
-- Runtime: `Docker`
-- Root Directory: blank
-- Dockerfile Path: `./Dockerfile`
-- Build Command: none
-- Start Command / Docker Command: `python -m streamlit run app.py --server.port 10000 --server.address 0.0.0.0 --server.headless true`
-- Auto Deploy: `Yes`
-- Health Check Path: `/`
-- Required environment variables:
-  - `API_BASE_URL=https://<your-api-service>.onrender.com`
-
-### Docker Notes for Render
-
-- Render does not need manual build command for Docker runtime.
-- Backend binds `PORT` through Uvicorn command in `render.yaml`.
-- Frontend binds `PORT` through Streamlit command in `render.yaml`.
-- Docker image itself keeps default combined command for local container usage, but Render overrides that command per service.
-- `.dockerignore` excludes local virtual environments, caches, Git metadata, and `data/fake_job_postings.csv` to reduce build context size.
-
-### Health Check
-
-- API: `GET /health`
-- Frontend: `GET /`
-
-### Troubleshooting
-
-- Frontend cannot analyze postings:
-  - Check `API_BASE_URL` points to deployed API URL, not localhost.
-- API deploy fails health check:
-  - Check `/health` returns `200`.
-- Frontend deploy loops or shows port errors:
-  - Check Streamlit command uses `--server.port ${PORT:-10000}` and `--server.address 0.0.0.0`.
-- History tab empty:
-  - Expected when `ENABLE_DB_LOGGING=false`.
-- MySQL history broken:
-  - Set `ENABLE_DB_LOGGING=true` and provide all `MYSQL_*` variables.
-- Large Docker builds:
-  - Model artifacts are shipped intentionally, but training dataset is excluded from Docker context by `.dockerignore`.
-
-## Usage
-
-1. Start API and Streamlit services.
-2. Open detector page in browser.
-3. Paste full job description into text area.
-4. Click **Analyze Posting**.
-5. Review verdict, confidence, fraud risk, and detected red flags.
-6. Open analytics dashboard to inspect recent history if DB logging enabled.
-
-## Screenshots
-
-Screenshots not present in repository yet.
-
-- Placeholder: `docs/screenshots/detector-home.png`
-- Placeholder: `docs/screenshots/detector-result.png`
-- Placeholder: `docs/screenshots/analytics-dashboard.png`
-
-## API Documentation
-
-### `GET /`
-
-- Purpose: basic API status message
-- Authentication: none
-
-Example response:
-
-```json
-{
-  "message": "Fake Job Detector API is running ✅"
-}
+### 5. Run the Streamlit Frontend
+In a new terminal window (with the virtual environment activated), start the UI:
+```bash
+python3 -m streamlit run app.py --server.port 8501 --server.address 0.0.0.0
 ```
+Open `http://localhost:8501` to use the application.
 
-### `GET /health`
+---
 
-- Purpose: health check and config visibility
-- Authentication: none
+## 🔒 Environment Variables
 
-Example response:
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `API_BASE_URL` | `http://127.0.0.1:8000` | The backend API URL that the Streamlit frontend calls. |
+| `MODEL_DIR` | `./model` | Directory where the `.pkl` model and vectorizer files are located. |
+| `ENABLE_DB_LOGGING` | `false` | Set to `true` to log predictions and load historical charts in MySQL. |
+| `MYSQL_HOST` | `localhost` | Host address of the MySQL database. |
+| `MYSQL_PORT` | `3306` | Port of the MySQL database. |
+| `MYSQL_USER` | `root` | Username of the MySQL database. |
+| `MYSQL_PASSWORD` | `""` | Password of the MySQL database (leave empty for blank passwords). |
+| `MYSQL_DATABASE` | `fake_job_detector` | Name of the database to log data to. |
 
-```json
-{
-  "status": "ok",
-  "database_logging": false,
-  "model_dir": "/app/model"
-}
-```
+---
 
-### `POST /predict`
+## 💡 Usage
 
-- Purpose: classify job posting text
-- Authentication: none
+1.  **Start the Apps:** Ensure the FastAPI backend is running before launching the Streamlit app.
+2.  **Paste Description:** Open the Streamlit UI, choose the **🔍 Detector** page, and paste a job posting (including title, description, benefits, and requirements) into the text box.
+3.  **Analyze Posting:** Click **🔎 Analyze Posting**.
+4.  **Interpret the AI Verdict:**
+    *   **Real Verdict (Green Card):** Indicates that the job contains standard phrasing and low fraud traits.
+    *   **Fake Verdict (Red Card):** Indicates that the job has high risk patterns or text features matching previous scams.
+    *   **Risk & Confidence:** Look at the *Fraud Risk Meter* and *Confidence Score* to assess the certainty.
+    *   **Heuristic Red Flags:** Check the bottom section for flagged regex patterns matching urgency words or suspicious payment terms.
+5.  **Analytics:** Navigate to the **📊 Analytics Dashboard** on the sidebar to view aggregate stats on all historical predictions (requires `ENABLE_DB_LOGGING=true`).
 
-Request body:
+---
 
-```json
-{
-  "text": "Remote data entry job. No experience required..."
-}
-```
+## 🔌 API Documentation
 
-Example response:
+The FastAPI backend exposes the following REST endpoints:
 
-```json
-{
-  "prediction": "Fake 🚨",
-  "confidence": "98.12%",
-  "fraud_probability": 98.12
-}
-```
+| Method | Endpoint | Request Body | Response Format | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/` | None | `{"message": "..."}` | Basic API status check. |
+| **GET** | `/health` | None | `{"status": "...", "database_logging": bool, ...}` | Returns health status and directory variables. |
+| **POST** | `/predict` | `{"text": "string"}` | `{"prediction": "Real/Fake", "confidence": "X%", "fraud_probability": Y}` | Evaluates a job description and returns classification metrics. |
+| **GET** | `/history` | None | `{"history": [...]}` | Retrieves the last 50 logged predictions (returns empty list if database logging is disabled). |
 
-### `GET /history`
+---
 
-- Purpose: fetch recent predictions from MySQL
-- Authentication: none
-- Notes: returns empty history with message when DB logging disabled
+## 📷 Screenshots
 
-Example response:
+### 🔍 Detector Page
+*Placeholder: `docs/screenshots/detector-home.png`*
+*Placeholder: `docs/screenshots/detector-result.png`*
 
-```json
-{
-  "history": [
-    {
-      "prediction": "Fake 🚨",
-      "fraud_probability": 97.4,
-      "created_at": "2026-07-04T00:00:00"
-    }
-  ]
-}
-```
+### 📊 Analytics Dashboard
+*Placeholder: `docs/screenshots/analytics-dashboard.png`*
 
-## Architecture
+---
 
-1. `preprocess.py` loads CSV dataset, combines `title`, `company_profile`, `description`, `requirements`, and `benefits`, then cleans text.
-2. `train.py` vectorizes text with TF-IDF, balances training data with SMOTE, trains Random Forest classifier, and saves model artifacts to `model/`.
-3. `main.py` loads pretrained artifacts, exposes prediction and history endpoints, and optionally writes predictions to MySQL.
-4. `app.py` provides Streamlit UI, sends text to FastAPI, displays verdict, and shows history analytics.
+## 📊 Model Information
 
-## Installation Process for MySQL History
+### Dataset
+*   **Source:** Real-world dataset containing **17,880 rows** of job postings.
+*   **Imbalance:** Extremely imbalanced with **17,014 real** postings (95.16%) and **866 fake** postings (4.84%).
 
-MySQL setup not automated in repository. Code expects existing database named by `MYSQL_DATABASE` and table named `predictions`. Create schema before enabling `ENABLE_DB_LOGGING=true`.
+### Preprocessing
+1.  **Feature Combination:** Combines the text fields `title`, `company_profile`, `description`, `requirements`, and `benefits` into a single text block.
+2.  **Cleaning:** Converts to lowercase, strips HTML tags, removes special characters/numbers, and normalizes whitespaces.
+3.  **Vectorization:** Vectorizes the clean text using a TF-IDF Vectorizer with `ngram_range=(1, 3)`, `max_features=15000`, and `sublinear_tf=True`.
+4.  **Sampling (SMOTE):** Applies SMOTE to balance the training set, generating synthetic fake postings to equal the real postings (balancing train size to 27,222 samples).
 
-## Future Improvements
+### Model Architecture
+*   **Algorithm:** Random Forest Classifier
+*   **Parameters:** `n_estimators=200`, `max_depth=20`, `class_weight='balanced'`, `n_jobs=-1`.
 
-- Add automated tests for API, preprocessing, and model loading
-- Add migrations or SQL bootstrap script for MySQL schema
-- Replace hardcoded Streamlit styling with reusable theme assets
-- Add request validation and structured logging
-- Serve frontend and API behind single reverse proxy for easier hosting
-- Add CI for linting, tests, Docker build, and dependency checks
+### Performance Metrics
+Trained locally on a stratified 80/20 split:
 
-## License
+*   **Overall Accuracy:** **98.41%**
+*   **Classification Report:**
 
-No license file present in repository. Recommended license: MIT.
+| Class | Precision | Recall | F1-Score | Support |
+| :--- | :---: | :---: | :---: | :---: |
+| **Real** | 0.98 | 1.00 | 0.99 | 3,403 |
+| **Fake** | 0.97 | 0.69 | 0.81 | 173 |
 
-## Author
+### Model Limitations
+*   **High Precision, Moderate Recall:** The model has high precision for fake jobs (0.97), meaning if it flags a job as fake, it is almost certainly a scam. However, its recall is 0.69, meaning it misses roughly 31% of scams. Users should still exercise caution even if a job is labeled as "Real".
+*   **Text Dependency:** It does not review company domains, links, or contact emails (unless embedded in the description text).
 
-- GitHub: [Arya185](https://github.com/Arya185)
+---
+
+## ☁️ Deployment
+
+The project is deployed on **Render** under a Blueprint multi-service arrangement.
+
+*   **Live App URL:** [https://fake-job-detector-app-qa6q.onrender.com/](https://fake-job-detector-app-qa6q.onrender.com/)
+
+### Deplaying to Render Yourself
+1.  Fork this repository.
+2.  Go to the [Render Dashboard](https://dashboard.render.com/).
+3.  Click **New > Blueprint**.
+4.  Connect your GitHub fork and choose the repository.
+5.  Render will parse the [render.yaml](file:///Users/aryapatel/arya/Programming/code/fake-job-detector/render.yaml) specification file and automatically provision:
+    *   `fake-job-detector-api` (API backend running FastAPI).
+    *   `fake-job-detector-app` (Web Frontend running Streamlit).
+6.  Once built, your web app will be live.
+
+---
+
+## 🔮 Future Improvements
+
+*   **Improve Recall for Fake Class:** Experiment with deep learning (e.g. BERT or DistilBERT) to capture finer contextual nuances.
+*   **Domain & Email Verification:** Add heuristics that check if the recruiter's email domain exists or is associated with high-risk free email hosts.
+*   **Dynamic Scraping:** Add a feature allowing users to paste a URL from LinkedIn or Indeed, scraping the job details on the fly.
+*   **User Feedback Loop:** Allow users to flag incorrect predictions, collecting feedback to retrain and update models.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1.  Fork the Project.
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your Changes (`git commit -m 'feat: add some amazing feature'`).
+4.  Push to the Branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
+
+---
+
+## 📄 License
+
+No license is currently checked into this repository. It is recommended that this project use the **MIT License**.
+
+---
+
+## 👤 Author
+
+*   **Github:** [@Arya185](https://github.com/Arya185)
