@@ -35,6 +35,7 @@ def get_db():
         user=os.getenv("MYSQL_USER"),
         password=os.getenv("MYSQL_PASSWORD", ""),
         database=os.getenv("MYSQL_DATABASE"),
+        ssl_disabled=False,
     )
 
 class JobPosting(BaseModel):
