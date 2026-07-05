@@ -1,26 +1,51 @@
+# Build stage
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Final stage
 FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python packages from builder
+COPY --from=builder /root/.local /root/.local
+
+# Make sure scripts in .local are usable
+ENV PATH=/root/.local/bin:$PATH
+
 # Python settings
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-
-# Default environment variables (can be overridden by Render)
 ENV MODEL_DIR=/app/model
-ENV API_BASE_URL=http://127.0.0.1:8000
-
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY app.py main.py ./
+COPY app.py main.py setup_db.py ./
 COPY model ./model
+COPY data ./data  # Optional
 
-# Expose common application ports (for local development only)
+# Run database setup (will create tables if credentials available)
+RUN python -c "import setup_db; setup_db.setup_database()" || echo "Database setup skipped"
+
+# Expose ports
 EXPOSE 8000
 EXPOSE 8501
+EXPOSE 10000
 
-# Default command (used for local Docker runs)
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
