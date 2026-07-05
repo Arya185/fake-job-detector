@@ -390,12 +390,6 @@ Contributions are welcome. To propose a change:
 
 ---
 
-## License
-
-No license file is currently included in this repository. If you plan to use or distribute this project, consider adding an [MIT License](https://opensource.org/licenses/MIT).
-
----
-
 ## Author
 
 **Arya Patel** — [GitHub @Arya185](https://github.com/Arya185)
