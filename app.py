@@ -6,9 +6,6 @@ import os
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
 
-# Temporarily display API URL in sidebar for debugging
-st.sidebar.write("API:", API_BASE_URL)
-
 st.set_page_config(
     page_title="FraudScan AI",
     page_icon="🛡️",
@@ -257,7 +254,7 @@ if page == "📊 Analytics Dashboard":
     st.divider()
 
     try:
-        response = requests.get(f"{API_BASE_URL}/history", timeout=90)  # Increased timeout for Render's cold start
+        response = requests.get(f"{API_BASE_URL}/history", timeout=90)  
         response.raise_for_status()
         data = response.json()
         history = data.get("history", [])
