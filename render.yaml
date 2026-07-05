@@ -1,5 +1,4 @@
 services:
-  # API Service
   - type: web
     name: fake-job-detector-api
     runtime: docker
@@ -9,27 +8,14 @@ services:
     healthCheckPath: /health
     envVars:
       - key: ENABLE_DB_LOGGING
-        value: "true"  
-      - key: MYSQL_HOST
-        value: localhost
-      - key: MYSQL_PORT
-        value: "3306"
-      - key: MYSQL_USER
-        value: root
-      - key: MYSQL_PASSWORD
-        value: root
-      - key: MYSQL_DATABASE
-        value: fake_job_detector
-      - key: MODEL_DIR
-        value: ./model
+        value: "false"
 
-  # Streamlit App Service
   - type: web
     name: fake-job-detector-app
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    dockerCommand: python -m streamlit run streamlit_app.py --server.port 10000 --server.address 0.0.0.0 --server.headless true
+    dockerCommand: python -m streamlit run app.py --server.port 10000 --server.address 0.0.0.0 --server.headless true
     healthCheckPath: /
     envVars:
       - key: API_BASE_URL
@@ -37,5 +23,3 @@ services:
           name: fake-job-detector-api
           type: web
           envVarKey: RENDER_EXTERNAL_URL
-      - key: ENABLE_DB_LOGGING
-        value: "false"  # Streamlit app doesn't need direct DB access
