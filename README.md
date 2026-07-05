@@ -37,11 +37,12 @@ The live deployment runs on [Render](https://render.com/) as two Docker web serv
 
 > Screenshots are not yet included in the repository. Add images under `docs/screenshots/` and replace the placeholders below.
 
-| Page | Placeholder |
-|------|-------------|
-| Detector — input | `docs/screenshots/detector-home.png` |
-| Detector — result | `docs/screenshots/detector-result.png` |
-| Analytics dashboard | `docs/screenshots/analytics-dashboard.png` |
+<img width="1440" height="799" alt="image" src="https://github.com/user-attachments/assets/41783d12-8b47-45a5-b514-ebb1424b56f2" />
+
+<img width="1440" height="799" alt="image" src="https://github.com/user-attachments/assets/d7fa92fd-7f96-4794-a9ae-f37def0ea824" />
+
+<img width="1440" height="799" alt="image" src="https://github.com/user-attachments/assets/7698a488-f91c-44c5-858b-53789c64fb08" />
+
 
 ---
 
