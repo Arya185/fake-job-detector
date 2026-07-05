@@ -393,3 +393,9 @@ Contributions are welcome. To propose a change:
 ## Author
 
 **Arya Patel** — [GitHub @Arya185](https://github.com/Arya185)
+
+---
+
+## Note
+
+Created readme.md using Cursor Agent
