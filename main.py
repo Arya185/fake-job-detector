@@ -5,7 +5,7 @@ import logging
 import joblib
 import mysql.connector
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = Path(os.getenv("MODEL_DIR", BASE_DIR / "model"))
@@ -42,9 +42,15 @@ def get_db():
         ssl_disabled=False,
     )
 
-class JobPosting(BaseModel):
-    text: str
+from pydantic import BaseModel, Field
 
+class JobPosting(BaseModel):
+    text: str = Field(
+        ...,
+        min_length=20,
+        max_length=10000,
+        description="Full job description"
+    )
 
 def clean_text(text: str) -> str:
     if not isinstance(text, str):
@@ -59,7 +65,6 @@ def clean_text(text: str) -> str:
 def root():
     return {"message": "Fake Job Detector API is running ✅"}
 
-
 @app.get("/health")
 def health():
     return {
@@ -67,7 +72,6 @@ def health():
         "database_logging": db_logging_enabled(),
         "model_dir": str(MODEL_DIR),
     }
-
 
 @app.post("/predict")
 def predict(job: JobPosting):
