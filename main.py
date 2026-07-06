@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-
+import logging
 import joblib
 import mysql.connector
 from fastapi import FastAPI
@@ -14,7 +14,11 @@ tfidf = joblib.load(MODEL_DIR / "tfidf_vectorizer.pkl")
 clf = joblib.load(MODEL_DIR / "random_forest_model.pkl")
 
 app = FastAPI(title="Fake Job Detector API")
-
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 def db_logging_enabled() -> bool:
     required = (
@@ -86,8 +90,8 @@ def predict(job: JobPosting):
         db.commit()
         cursor.close()
         db.close()
-    except Exception:
-        pass
+except Exception as e:
+    logger.exception("Failed to log prediction to database")
 
     return {
         "prediction": label,
