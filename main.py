@@ -90,8 +90,8 @@ def predict(job: JobPosting):
         db.commit()
         cursor.close()
         db.close()
-except Exception as e:
-    logger.exception("Failed to log prediction to database")
+    except Exception as e:
+        logger.exception("Failed to log prediction to database")
 
     return {
         "prediction": label,
