@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 from imblearn.over_sampling import SMOTE
 import numpy as np
-from preprocess import load_and_preprocess
+from services.preprocess import load_and_preprocess
 
 def train():
     print("📦 Loading data...")
