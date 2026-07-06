@@ -389,6 +389,12 @@ Contributions are welcome. To propose a change:
 
 ---
 
+## License
+
+This project is licensed under the terms of the [MIT license](https://github.com/Arya185/fake-job-detector?tab=MIT-1-ov-file).
+
+---
+
 ## Author
 
 **Arya Patel** — [GitHub @Arya185](https://github.com/Arya185)
