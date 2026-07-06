@@ -1,12 +1,23 @@
 import os
-import re
 from pathlib import Path
 import logging
 import joblib
-import mysql.connector
+
 from fastapi import FastAPI
-from datetime import datetime
-from pydantic import BaseModel, Field
+
+from models.schemas import (
+    JobPosting,
+    PredictionResponse,
+    HistoryItem,
+    HistoryResponse,
+)
+
+from services.database import (
+    db_logging_enabled,
+    get_db,
+)
+
+from services.predictor import predict_text
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = Path(os.getenv("MODEL_DIR", BASE_DIR / "model"))
@@ -21,61 +32,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def db_logging_enabled() -> bool:
-    required = (
-        os.getenv("MYSQL_HOST"),
-        os.getenv("MYSQL_USER"),
-        os.getenv("MYSQL_DATABASE"),
-    )
-    return os.getenv("ENABLE_DB_LOGGING", "false").lower() == "true" and all(required)
-
-
-def get_db():
-    if not db_logging_enabled():
-        raise RuntimeError("Database logging disabled.")
-
-    return mysql.connector.connect(
-        host=os.getenv("MYSQL_HOST"),
-        port=int(os.getenv("MYSQL_PORT", "3306")),
-        user=os.getenv("MYSQL_USER"),
-        password=os.getenv("MYSQL_PASSWORD", ""),
-        database=os.getenv("MYSQL_DATABASE"),
-        ssl_disabled=False,
-    )
-
-class JobPosting(BaseModel):
-    text: str = Field(
-        ...,
-        min_length=20,
-        max_length=10000,
-        description="Full job description"
-    )
-
-class PredictionResponse(BaseModel):
-    prediction: str
-    confidence: str
-    fraud_probability: float
-
-
-class HistoryItem(BaseModel):
-    prediction: str
-    fraud_probability: float
-    created_at: datetime
-
-
-class HistoryResponse(BaseModel):
-    history: list[HistoryItem]
-    message: str | None = None
-    error: str | None = None
-
-def clean_text(text: str) -> str:
-    if not isinstance(text, str):
-        return ""
-    text = text.lower()
-    text = re.sub(r'<[^>]+>', ' ', text)
-    text = re.sub(r'[^a-z\s]', ' ', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
 
 @app.get("/")
 def root():
@@ -90,41 +46,12 @@ def health():
     }
 
 @app.post("/predict", response_model=PredictionResponse)
-
 def predict(job: JobPosting):
-    cleaned = clean_text(job.text)
-    vec = tfidf.transform([cleaned])
-    prediction = clf.predict(vec)[0]
-    probability = clf.predict_proba(vec)[0]
-
-    label = "Fake 🚨" if prediction == 1 else "Real ✅"
-    confidence = round(float(max(probability)) * 100, 2)
-    fraud_prob = round(float(probability[1]) * 100, 2)
-
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute(
-            "INSERT INTO predictions (input_text, prediction, fraud_probability) VALUES (%s, %s, %s)",
-            (job.text[:500], label, fraud_prob)
-        )
-        db.commit()
-        cursor.close()
-        db.close()
-    except Exception as e:
-        logger.exception("Failed to log prediction to database: %s", e)
-
-    logger.info(
-        "Prediction completed | Result=%s | Fraud Probability=%.2f%%",
-        label,
-        fraud_prob
+    return predict_text(
+        job.text,
+        tfidf,
+        clf,
     )
-
-    return {
-        "prediction": label,
-        "confidence": f"{confidence}%",
-        "fraud_probability": fraud_prob
-    }
 
 @app.get("/history", response_model=HistoryResponse)
 
