@@ -5,6 +5,7 @@ import logging
 import joblib
 import mysql.connector
 from fastapi import FastAPI
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -42,8 +43,6 @@ def get_db():
         ssl_disabled=False,
     )
 
-from pydantic import BaseModel, Field
-
 class JobPosting(BaseModel):
     text: str = Field(
         ...,
@@ -51,6 +50,23 @@ class JobPosting(BaseModel):
         max_length=10000,
         description="Full job description"
     )
+
+class PredictionResponse(BaseModel):
+    prediction: str
+    confidence: str
+    fraud_probability: float
+
+
+class HistoryItem(BaseModel):
+    prediction: str
+    fraud_probability: float
+    created_at: datetime
+
+
+class HistoryResponse(BaseModel):
+    history: list[HistoryItem]
+    message: str | None = None
+    error: str | None = None
 
 def clean_text(text: str) -> str:
     if not isinstance(text, str):
@@ -73,7 +89,8 @@ def health():
         "model_dir": str(MODEL_DIR),
     }
 
-@app.post("/predict")
+@app.post("/predict", response_model=PredictionResponse)
+
 def predict(job: JobPosting):
     cleaned = clean_text(job.text)
     vec = tfidf.transform([cleaned])
@@ -103,7 +120,8 @@ def predict(job: JobPosting):
         "fraud_probability": fraud_prob
     }
 
-@app.get("/history")
+@app.get("/history", response_model=HistoryResponse)
+
 def history():
     if not db_logging_enabled():
         return {
