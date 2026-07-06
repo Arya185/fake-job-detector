@@ -112,7 +112,13 @@ def predict(job: JobPosting):
         cursor.close()
         db.close()
     except Exception as e:
-        logger.exception("Failed to log prediction to database")
+        logger.exception("Failed to log prediction to database: %s", e)
+
+    logger.info(
+        "Prediction completed | Result=%s | Fraud Probability=%.2f%%",
+        label,
+        fraud_prob
+    )
 
     return {
         "prediction": label,
