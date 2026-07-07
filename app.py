@@ -104,6 +104,15 @@ st.markdown("""
     color:#94A3B8;
     margin-top:8px;
 }
+.flag-item {
+    background: rgba(255, 65, 108, 0.1);
+    border-left: 3px solid #ff416c;
+    padding: 0.5rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 0.3rem 0;
+    color: #ff8fa3;
+    font-size: 0.9rem;
+}
 .safe-item {
     background: rgba(17, 153, 142, 0.1);
     border-left: 3px solid #11998e;
@@ -264,7 +273,7 @@ if page == "🔍 Detector":
                     response = requests.post(
                         f"{API_BASE_URL}/predict",
                         json={"text": job_text},
-                        timeout=90  # Increased timeout for Render's cold start
+                        timeout=90
                     )
                     response.raise_for_status()
                     result = response.json()
@@ -350,45 +359,49 @@ if page == "🔍 Detector":
                 except Exception as e:
                     st.exception(e)
 
-                    st.markdown("###")
-                    st.markdown("### 🤖 AI Recommendation")
-                    
-                    if analyze and job_text.strip():
-                        if fraud_prob >= 75:
-                            st.error("""
-                            ### 🚨 High Scam Probability
-                            
-                            We strongly recommend:
-                            
-                            - ❌ Do not pay any registration fee
-                            - ❌ Avoid sharing personal documents
-                            - ❌ Verify the company website
-                            - ❌ Search company reviews
-                            - ❌ Apply only through official portals
-                            """)
-                        elif fraud_prob >= 50:
-                            st.warning("""
-                            ### ⚠ Proceed Carefully
-                            
-                            - Verify recruiter identity
-                            - Cross-check salary claims
-                            - Confirm company registration
-                            - Never send money before joining
-                            """)
-                        else:
-                            st.success("""
-                            ### ✅ Appears Relatively Safe
-                            
-                            No major scam indicators were detected.
-                            
-                            Still verify:
-                            
-                            - Company website
-                            - Recruiter email
-                            - LinkedIn company page
-                            - Official job portal
-                            """)
+                # AI Recommendation section - MOVED OUTSIDE the except block
+                st.markdown("###")
+                st.markdown("### 🤖 AI Recommendation")
+                
+                if analyze and job_text.strip():
+                    if fraud_prob >= 75:
+                        st.error("""
+                        ### 🚨 High Scam Probability
+                        
+                        We strongly recommend:
+                        
+                        - ❌ Do not pay any registration fee
+                        - ❌ Avoid sharing personal documents
+                        - ❌ Verify the company website
+                        - ❌ Search company reviews
+                        - ❌ Apply only through official portals
+                        """)
+                    elif fraud_prob >= 50:
+                        st.warning("""
+                        ### ⚠ Proceed Carefully
+                        
+                        - Verify recruiter identity
+                        - Cross-check salary claims
+                        - Confirm company registration
+                        - Never send money before joining
+                        """)
+                    else:
+                        st.success("""
+                        ### ✅ Appears Relatively Safe
+                        
+                        No major scam indicators were detected.
+                        
+                        Still verify:
+                        
+                        - Company website
+                        - Recruiter email
+                        - LinkedIn company page
+                        - Official job portal
+                        """)
     
+    st.markdown(
+        '<div class="footer">🛡️ FraudScan AI — Powered by Random Forest + FastAPI + Streamlit | Trained on 17,000+ job postings</div>',
+        unsafe_allow_html=True
     )
 
 # ---- ANALYTICS DASHBOARD PAGE ----
