@@ -14,6 +14,10 @@ class PredictionResponse(BaseModel):
     confidence: str
     fraud_probability: float
 
+    risk_score: int
+    matched_rules: list[str]
+    matched_keywords: list[str]
+
 class HistoryItem(BaseModel):
     prediction: str
     fraud_probability: float
