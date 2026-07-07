@@ -306,6 +306,7 @@ if page == "🔍 Detector":
                     st.progress(fraud_prob / 100)
 
                     found_flags = check_red_flags(job_text)
+                    
                     st.markdown("###")
                     st.markdown("### 🤖 AI Analysis")
                     col1, col2 = st.columns([1, 1])
@@ -349,8 +350,8 @@ if page == "🔍 Detector":
                 except Exception as e:
                     st.exception(e)
 
-                    st.markdown("---")
-                    st.markdown("## 💡 AI Recommendation")
+                    st.markdown("###")
+                    st.markdown("### 🤖 AI Recommendation")
                     
                     if analyze and job_text.strip():
                         if fraud_prob >= 75:
@@ -388,9 +389,6 @@ if page == "🔍 Detector":
                             - Official job portal
                             """)
     
-    st.markdown(
-        '<div class="footer">🛡️ FraudScan AI — Powered by Random Forest + FastAPI + Streamlit | Trained on 17,000+ job postings</div>',
-        unsafe_allow_html=True
     )
 
 # ---- ANALYTICS DASHBOARD PAGE ----
