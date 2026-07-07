@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import re
 import os
 
@@ -128,8 +130,8 @@ def check_red_flags(text):
             found.append({"label": label, "match": match_text})
     return found
 
+# ---- DETECTOR PAGE ----
 if page == "🔍 Detector":
-
     st.markdown("""
     <div class="hero">
         <h1>🛡️ FraudScan AI</h1>
@@ -202,31 +204,64 @@ if page == "🔍 Detector":
                         st.markdown('<div class="result-real">✅ THIS JOB APPEARS LEGITIMATE</div>', unsafe_allow_html=True)
 
                     st.markdown("###")
-                    m1, m2, m3 = st.columns(3)
+                    m1, m2, m3, m4 = st.columns(4)
                     with m1:
-                        st.markdown(f'<div class="metric-card"><div class="metric-label">Fraud Risk</div><div class="metric-value">{fraud_prob}%</div></div>', unsafe_allow_html=True)
+                        verdict_icon = "⚠️ Fake" if "Fake" in prediction else "✅ Real"
+                        st.markdown(f'<div class="metric-card"><div class="metric-label">Verdict</div><div class="metric-value">{verdict_icon}</div></div>', unsafe_allow_html=True)
                     with m2:
                         st.markdown(f'<div class="metric-card"><div class="metric-label">Confidence</div><div class="metric-value">{confidence}</div></div>', unsafe_allow_html=True)
                     with m3:
-                        verdict_icon = "⚠️ Fake" if "Fake" in prediction else "✅ Real"
-                        st.markdown(f'<div class="metric-card"><div class="metric-label">Verdict</div><div class="metric-value">{verdict_icon}</div></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metric-card"><div class="metric-label">Fraud Risk</div><div class="metric-value">{fraud_prob}%</div></div>', unsafe_allow_html=True)
+                    with m4:
+                        st.markdown(f'<div class="metric-card"><div class="metric-label">Risk Score</div><div class="metric-value">{result["risk_score"]}</div></div>', unsafe_allow_html=True)
 
                     st.markdown("###")
-                    st.markdown("**📊 Fraud Risk Meter**")
-                    st.progress(int(fraud_prob))
+                    st.markdown("### 📊 Risk Assessment")
+
+                    if fraud_prob < 25:
+                        st.success(f"🟢 Low Risk ({fraud_prob}%)")
+                    elif fraud_prob < 50:
+                        st.info(f"🔵 Moderate Risk ({fraud_prob}%)")
+                    elif fraud_prob < 75:
+                        st.warning(f"🟠 High Risk ({fraud_prob}%)")
+                    else:
+                        st.error(f"🔴 Critical Risk ({fraud_prob}%)")
+
+                    st.progress(fraud_prob / 100)
 
                     found_flags = check_red_flags(job_text)
                     st.markdown("###")
+                    st.markdown("### 🤖 AI Analysis")
+                    col1, col2 = st.columns([1, 1])
+                    
+                    with col1:
+                        st.markdown("#### 🚩 Rule-Based Findings")
+                        if result["matched_keywords"]:
+                            for keyword in result["matched_keywords"]:
+                                st.markdown(
+                                    f"""
+                                    <div class="flag-item">
+                                        ⚠️ <b>{keyword.title()}</b>
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                        else:
+                            st.success("No suspicious keywords detected.")
 
-                    if found_flags:
-                        st.markdown(f"**🚩 {len(found_flags)} Red Flag(s) Detected:**")
-                        for flag in found_flags:
-                            st.markdown(
-                                f'<div class="flag-item">{flag["label"]} &nbsp;|&nbsp; <code>{flag["match"]}</code></div>',
-                                unsafe_allow_html=True
-                            )
-                    else:
-                        st.markdown('<div class="safe-item">✅ No red flag patterns detected</div>', unsafe_allow_html=True)
+                    with col2:
+                        st.markdown("#### 📂 Risk Categories")
+                        if result["matched_rules"]:
+                            for rule in result["matched_rules"]:
+                                emoji = {
+                                    "payment": "💰",
+                                    "contact": "📞",
+                                    "urgency": "⚡",
+                                    "salary": "💵"
+                                }.get(rule, "⚠️")
+                                st.info(f"{emoji} {rule.title()}")
+                        else:
+                            st.success("No risky categories found.")
 
                 except requests.exceptions.Timeout:
                     st.error(
@@ -238,6 +273,45 @@ if page == "🔍 Detector":
                 except Exception as e:
                     st.exception(e)
 
+    st.markdown("---")
+    st.markdown("## 💡 AI Recommendation")
+    
+    if analyze and job_text.strip():
+        if fraud_prob >= 75:
+            st.error("""
+            ### 🚨 High Scam Probability
+
+            We strongly recommend:
+
+            - ❌ Do not pay any registration fee
+            - ❌ Avoid sharing personal documents
+            - ❌ Verify the company website
+            - ❌ Search company reviews
+            - ❌ Apply only through official portals
+            """)
+        elif fraud_prob >= 50:
+            st.warning("""
+            ### ⚠ Proceed Carefully
+
+            - Verify recruiter identity
+            - Cross-check salary claims
+            - Confirm company registration
+            - Never send money before joining
+            """)
+        else:
+            st.success("""
+            ### ✅ Appears Relatively Safe
+
+            No major scam indicators were detected.
+
+            Still verify:
+
+            - Company website
+            - Recruiter email
+            - LinkedIn company page
+            - Official job portal
+            """)
+    
     st.markdown(
         '<div class="footer">🛡️ FraudScan AI — Powered by Random Forest + FastAPI + Streamlit | Trained on 17,000+ job postings</div>',
         unsafe_allow_html=True
@@ -254,7 +328,7 @@ if page == "📊 Analytics Dashboard":
     st.divider()
 
     try:
-        response = requests.get(f"{API_BASE_URL}/history", timeout=90)  
+        response = requests.get(f"{API_BASE_URL}/history", timeout=90)
         response.raise_for_status()
         data = response.json()
         history = data.get("history", [])
@@ -284,8 +358,31 @@ if page == "📊 Analytics Dashboard":
             col1, col2 = st.columns(2)
 
             with col1:
-                st.markdown("#### 🥧 Real vs Fake Distribution")
-                st.bar_chart(df['label'].value_counts())
+                st.markdown("#### 🥧 Fake vs Real Distribution")
+            
+                pie = px.pie(
+                    values=df["label"].value_counts().values,
+                    names=df["label"].value_counts().index,
+                    hole=0.6,
+                    color=df["label"].value_counts().index,
+                    color_discrete_map={
+                        "Fake": "#ff416c",
+                        "Real": "#38ef7d"
+                    }
+                )
+            
+                pie.update_traces(
+                    textinfo="percent+label",
+                    textfont_size=14
+                )
+            
+                pie.update_layout(
+                    height=380,
+                    margin=dict(l=20, r=20, t=20, b=20),
+                    showlegend=True
+                )
+            
+                st.plotly_chart(pie, use_container_width=True)
 
             with col2:
                 st.markdown("#### 📈 Fraud Probability Distribution")
