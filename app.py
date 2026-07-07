@@ -14,12 +14,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Page navigation
-page = st.sidebar.selectbox(
-    "📍 Navigate",
-    ["🔍 Detector", "📊 Analytics Dashboard"]
-)
-
 # Premium CSS
 st.markdown("""
 <style>
@@ -120,6 +114,28 @@ st.markdown("""
     border-radius: 0 8px 8px 0;
     color: #38ef7d;
 }
+.input-card {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+.trust-badge {
+    background: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #E2E8F0;
+    transition: 0.2s;
+}
+.trust-badge:hover {
+    border-color: #7C5CFF;
+    transform: translateY(-2px);
+}
 .footer {
     text-align: center;
     color: #444;
@@ -160,8 +176,34 @@ def check_red_flags(text):
             found.append({"label": label, "match": match_text})
     return found
 
+# ---- SIDEBAR ----
+with st.sidebar:
+    st.markdown("# 🛡 FraudScan AI")
+    st.caption("AI Fraud Detection Platform")
+    st.divider()
+    
+    page = st.selectbox(
+        "Navigate",
+        ["🔍 Detector", "📊 Analytics Dashboard"]
+    )
+    
+    st.divider()
+    
+    st.markdown("### System")
+    st.write("🌲 Random Forest")
+    st.write("⚡ FastAPI")
+    st.write("📊 TF-IDF")
+    st.write("🛡 Rule Engine")
+    
+    st.divider()
+    st.caption("Version 1.0")
+
 # ---- DETECTOR PAGE ----
 if page == "🔍 Detector":
+    # Initialize session state for job text
+    if 'job_text' not in st.session_state:
+        st.session_state.job_text = ""
+    
     st.markdown("""
     <div class="hero">
 
@@ -224,45 +266,128 @@ if page == "🔍 Detector":
         </div>
         """, unsafe_allow_html=True)
 
+    # Trust Badges
+    st.markdown("###")
+    
+    b1, b2, b3, b4, b5 = st.columns(5)
+    
+    with b1:
+        st.success("🌲 Random Forest")
+    with b2:
+        st.success("🧠 Explainable AI")
+    with b3:
+        st.success("🛡 Rule Engine")
+    with b4:
+        st.success("⚡ FastAPI")
+    with b5:
+        st.success("📊 17K Dataset")
+
     st.divider()
 
     col_left, col_right = st.columns([1.2, 1], gap="large")
 
     with col_left:
+        # Wrap input section in card
+        st.markdown('<div class="input-card">', unsafe_allow_html=True)
+        
         st.markdown("#### 📋 Paste Job Description")
+        
+        # Use session state for the text area
         job_text = st.text_area(
-            "Job Input",
-            placeholder="Paste the full job posting here — title, description, requirements, benefits...",
-            height=300,
-            label_visibility="collapsed"
+            "Job Description",
+            value=st.session_state.job_text,
+            placeholder="""
+Paste the complete job advertisement here.
+
+Example:
+
+• Job Title
+• Salary
+• Company Description
+• Requirements
+• Benefits
+• Contact Details
+""",
+            height=320,
+            label_visibility="collapsed",
+            key="job_text_input"
         )
+        
+        # Update session state when text changes
+        st.session_state.job_text = job_text
+        
+        # Live Input Statistics
+        words = len(job_text.split())
+        chars = len(job_text)
+        lines = len(job_text.splitlines())
+        
+        s1, s2, s3 = st.columns(3)
+        
+        with s1:
+            st.metric("📝 Words", words)
+        with s2:
+            st.metric("🔤 Characters", chars)
+        with s3:
+            st.metric("📄 Lines", lines)
+        
+        # Input Quality Indicator
+        if chars == 0:
+            st.info("📝 Paste a job description to begin.")
+        elif chars < 150:
+            st.warning("⚠️ Input is quite short. Results may be less reliable.")
+        elif chars < 500:
+            st.info("✅ Good amount of information provided.")
+        else:
+            st.success("🌟 Excellent input quality for analysis.")
 
         col1, col2 = st.columns([3, 1])
         with col1:
-            analyze = st.button("🔎 Analyze Posting", use_container_width=True, type="primary")
+            analyze = st.button("🔍 Analyze Job", use_container_width=True, type="primary")
         with col2:
-            clear = st.button("🗑️ Clear", use_container_width=True)
+            reset = st.button("↺ Reset", use_container_width=True)
 
-        if clear:
+        # Reset logic - clears the text area using session state
+        if reset:
+            st.session_state.job_text = ""
             st.rerun()
+            
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_right:
-        st.markdown("#### 🚩 How It Works")
-        st.markdown("""
-        1. **Paste** any job description
-        2. **Click** Analyze Posting  
-        3. **Get** instant AI verdict
+        st.markdown("## 🤖 AI Engine")
         
-        Our model was trained on **17,000+ real job postings** and achieves **98%+ accuracy**.
+        st.info("""
+### Detection Pipeline
+
+📥 Input Job Posting
+
+⬇
+
+🧹 Text Cleaning
+
+⬇
+
+🌲 Random Forest Classifier
+
+⬇
+
+🛡 Rule Engine
+
+⬇
+
+📈 Fraud Probability
+
+⬇
+
+💡 AI Recommendation
+""")
         
-        ---
+        st.markdown("### Technologies")
         
-        **Common Scam Signals:**
-        - 💸 Unrealistic salary promises
-        - 📧 Requests for personal/bank info
-        - 🚀 "No experience needed" urgency
-        - 🌐 Vague company details
-        """)
+        st.success("✔ Random Forest")
+        st.success("✔ TF-IDF Vectorizer")
+        st.success("✔ Rule-Based Detection")
+        st.success("✔ Explainable AI")
 
     if analyze:
         if not job_text.strip():
@@ -349,21 +474,10 @@ if page == "🔍 Detector":
                         else:
                             st.success("No risky categories found.")
 
-                except requests.exceptions.Timeout:
-                    st.error(
-                        "The backend is still waking up on Render's free tier. "
-                        "Please wait about a minute and try again."
-                    )
-                except requests.exceptions.RequestException as e:
-                    st.error(f"API request failed:\n{e}")
-                except Exception as e:
-                    st.exception(e)
-
-                # AI Recommendation section - MOVED OUTSIDE the except block
-                st.markdown("###")
-                st.markdown("### 🤖 AI Recommendation")
-                
-                if analyze and job_text.strip():
+                    # AI Recommendation section
+                    st.markdown("###")
+                    st.markdown("### 🤖 AI Recommendation")
+                    
                     if fraud_prob >= 75:
                         st.error("""
                         ### 🚨 High Scam Probability
@@ -398,6 +512,16 @@ if page == "🔍 Detector":
                         - LinkedIn company page
                         - Official job portal
                         """)
+
+                except requests.exceptions.Timeout:
+                    st.error(
+                        "The backend is still waking up on Render's free tier. "
+                        "Please wait about a minute and try again."
+                    )
+                except requests.exceptions.RequestException as e:
+                    st.error(f"API request failed:\n{e}")
+                except Exception as e:
+                    st.exception(e)
     
     st.markdown(
         '<div class="footer">🛡️ FraudScan AI — Powered by Random Forest + FastAPI + Streamlit | Trained on 17,000+ job postings</div>',
