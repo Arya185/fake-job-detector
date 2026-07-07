@@ -1,3 +1,4 @@
+from utils.text import clean_text
 from services.rules import check_rules
 
 def predict_text(
