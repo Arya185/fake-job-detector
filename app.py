@@ -27,22 +27,40 @@ st.markdown("""
 
 * { font-family: 'Inter', sans-serif; }
 
-.hero { 
-    text-align: center; 
-    padding: 2rem 0 1rem 0;
+.hero{
+    text-align:center;
+    padding:60px 0 30px;
 }
-.hero h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+
+.hero h1{
+    font-size:58px;
+    font-weight:800;
+    margin-bottom:10px;
+    background:linear-gradient(
+        90deg,
+        #7C5CFF,
+        #A855F7
+    );
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
-.hero p {
-    color: #888;
-    font-size: 1.1rem;
+
+.hero h2{
+    font-size:34px;
+    font-weight:700;
+    color:white;
+    line-height:1.3;
+    margin-bottom:20px;
 }
+
+.hero p{
+    width:70%;
+    margin:auto;
+    font-size:18px;
+    color:#94A3B8;
+    line-height:1.8;
+}
+
 .result-fake {
     background: linear-gradient(135deg, #ff416c, #ff4b2b);
     color: white;
@@ -65,23 +83,26 @@ st.markdown("""
     margin: 1rem 0;
     box-shadow: 0 8px 32px rgba(17, 153, 142, 0.3);
 }
-.metric-card {
-    background: #1a1a2e;
-    border: 1px solid #2a2a4a;
-    border-radius: 12px;
-    padding: 1.2rem;
-    text-align: center;
+.metric-card{
+    background:#1E293B;
+    border:1px solid #334155;
+    border-radius:18px;
+    padding:28px;
+    text-align:center;
+    transition:0.25s;
 }
-.metric-label { color: #888; font-size: 0.85rem; margin-bottom: 0.3rem; }
-.metric-value { color: #fff; font-size: 1.8rem; font-weight: 700; }
-.flag-item {
-    background: rgba(255, 65, 108, 0.1);
-    border-left: 3px solid #ff416c;
-    padding: 0.5rem 1rem;
-    border-radius: 0 8px 8px 0;
-    margin: 0.3rem 0;
-    color: #ff8fa3;
-    font-size: 0.9rem;
+.metric-card:hover{
+    transform:translateY(-6px);
+    border-color:#7C5CFF;
+}
+.metric-value{
+    font-size:34px;
+    font-weight:800;
+    color:white;
+}
+.metric-label{
+    color:#94A3B8;
+    margin-top:8px;
 }
 .safe-item {
     background: rgba(17, 153, 142, 0.1);
@@ -134,10 +155,65 @@ def check_red_flags(text):
 if page == "🔍 Detector":
     st.markdown("""
     <div class="hero">
-        <h1>🛡️ FraudScan AI</h1>
-        <p>AI-powered fake job posting detector — protect yourself from employment scams</p>
+
+    <h1>🛡 FraudScan AI</h1>
+
+    <h2>
+    Analyze Job Postings using<br>
+    Machine Learning + Rule Engine
+    </h2>
+
+    <p>
+    Detect fraudulent job advertisements in seconds using an AI model,
+    keyword-based fraud detection, and explainable risk analysis.
+    </p>
+
     </div>
     """, unsafe_allow_html=True)
+
+    st.markdown("###")
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">17K+</div>
+            <div class="metric-label">
+            Training Samples
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c2:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">98%</div>
+            <div class="metric-label">
+            Accuracy
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c3:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">&lt;1s</div>
+            <div class="metric-label">
+            Avg Response
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c4:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">24/7</div>
+            <div class="metric-label">
+            AI Detection
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.divider()
 
@@ -273,44 +349,44 @@ if page == "🔍 Detector":
                 except Exception as e:
                     st.exception(e)
 
-    st.markdown("---")
-    st.markdown("## 💡 AI Recommendation")
-    
-    if analyze and job_text.strip():
-        if fraud_prob >= 75:
-            st.error("""
-            ### 🚨 High Scam Probability
-
-            We strongly recommend:
-
-            - ❌ Do not pay any registration fee
-            - ❌ Avoid sharing personal documents
-            - ❌ Verify the company website
-            - ❌ Search company reviews
-            - ❌ Apply only through official portals
-            """)
-        elif fraud_prob >= 50:
-            st.warning("""
-            ### ⚠ Proceed Carefully
-
-            - Verify recruiter identity
-            - Cross-check salary claims
-            - Confirm company registration
-            - Never send money before joining
-            """)
-        else:
-            st.success("""
-            ### ✅ Appears Relatively Safe
-
-            No major scam indicators were detected.
-
-            Still verify:
-
-            - Company website
-            - Recruiter email
-            - LinkedIn company page
-            - Official job portal
-            """)
+                    st.markdown("---")
+                    st.markdown("## 💡 AI Recommendation")
+                    
+                    if analyze and job_text.strip():
+                        if fraud_prob >= 75:
+                            st.error("""
+                            ### 🚨 High Scam Probability
+                            
+                            We strongly recommend:
+                            
+                            - ❌ Do not pay any registration fee
+                            - ❌ Avoid sharing personal documents
+                            - ❌ Verify the company website
+                            - ❌ Search company reviews
+                            - ❌ Apply only through official portals
+                            """)
+                        elif fraud_prob >= 50:
+                            st.warning("""
+                            ### ⚠ Proceed Carefully
+                            
+                            - Verify recruiter identity
+                            - Cross-check salary claims
+                            - Confirm company registration
+                            - Never send money before joining
+                            """)
+                        else:
+                            st.success("""
+                            ### ✅ Appears Relatively Safe
+                            
+                            No major scam indicators were detected.
+                            
+                            Still verify:
+                            
+                            - Company website
+                            - Recruiter email
+                            - LinkedIn company page
+                            - Official job portal
+                            """)
     
     st.markdown(
         '<div class="footer">🛡️ FraudScan AI — Powered by Random Forest + FastAPI + Streamlit | Trained on 17,000+ job postings</div>',
