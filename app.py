@@ -136,6 +136,10 @@ st.markdown("""
     border-color: #7C5CFF;
     transform: translateY(-2px);
 }
+/* Hide the text area label completely */
+.stTextArea label {
+    display: none !important;
+}
 .footer {
     text-align: center;
     color: #444;
@@ -290,24 +294,18 @@ if page == "🔍 Detector":
         # Wrap input section in card
         st.markdown('<div class="input-card">', unsafe_allow_html=True)
         
-        st.markdown("#### 📋 Paste Job Description")
+        # Use HTML for the header with better styling
+        st.markdown("""
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <span style="font-size: 18px; font-weight: 600; color: #E2E8F0;">📋 Paste Job Description</span>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Use session state for the text area
+        # Use session state for the text area - label hidden with CSS
         job_text = st.text_area(
             "Job Description",
             value=st.session_state.job_text,
-            placeholder="""
-Paste the complete job advertisement here.
-
-Example:
-
-• Job Title
-• Salary
-• Company Description
-• Requirements
-• Benefits
-• Contact Details
-""",
+            placeholder="Paste the complete job advertisement here.\n\nExample:\n\n• Job Title\n• Salary\n• Company Description\n• Requirements\n• Benefits\n• Contact Details",
             height=320,
             label_visibility="collapsed",
             key="job_text_input"
