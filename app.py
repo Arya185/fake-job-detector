@@ -271,20 +271,30 @@ if page == "🔍 Detector":
         """, unsafe_allow_html=True)
 
     # Trust Badges
+    
     st.markdown("###")
-    
-    b1, b2, b3, b4, b5 = st.columns(5)
-    
-    with b1:
-        st.success("🌲 Random Forest")
-    with b2:
-        st.success("🧠 Explainable AI")
-    with b3:
-        st.success("🛡 Rule Engine")
-    with b4:
-        st.success("⚡ FastAPI")
-    with b5:
-        st.success("📊 17K Dataset")
+
+    c1,c2,c3,c4,c5 = st.columns(5)
+
+    for col, text in zip(
+        [c1,c2,c3,c4,c5],
+        [
+            "🌲 Random Forest",
+            "🧠 Explainable AI",
+            "🛡 Rule Engine",
+            "⚡ FastAPI",
+            "📊 17K Dataset"
+        ]
+    ):
+        with col:
+            st.markdown(
+                f"""
+                <div class="trust-badge">
+                    {text}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
     st.divider()
 
@@ -306,7 +316,7 @@ if page == "🔍 Detector":
             "Job Description",
             value=st.session_state.job_text,
             placeholder="Paste the complete job advertisement here.\n\nExample:\n\n• Job Title\n• Salary\n• Company Description\n• Requirements\n• Benefits\n• Contact Details",
-            height=320,
+            height=360,
             label_visibility="collapsed",
             key="job_text_input"
         )
@@ -340,7 +350,7 @@ if page == "🔍 Detector":
 
         col1, col2 = st.columns([3, 1])
         with col1:
-            analyze = st.button("🔍 Analyze Job", use_container_width=True, type="primary")
+            analyze = st.button("🚀 Start AI Analysis", use_container_width=True, type="primary")
         with col2:
             reset = st.button("↺ Reset", use_container_width=True)
 
@@ -357,27 +367,8 @@ if page == "🔍 Detector":
         st.info("""
 ### Detection Pipeline
 
-📥 Input Job Posting
+📥 Input Job Posting ➜ 🧹 Text Cleaning ➜ 🌲 Random Forest Classifier ➜ 🛡 Rule Engine ➜ 📈 Fraud Probability ➜ 💡 AI Recommendation
 
-⬇
-
-🧹 Text Cleaning
-
-⬇
-
-🌲 Random Forest Classifier
-
-⬇
-
-🛡 Rule Engine
-
-⬇
-
-📈 Fraud Probability
-
-⬇
-
-💡 AI Recommendation
 """)
         
         st.markdown("### Technologies")
@@ -391,135 +382,168 @@ if page == "🔍 Detector":
         if not job_text.strip():
             st.warning("⚠️ Please paste a job description first.")
         else:
-            with st.spinner("🤖 Analyzing with AI..."):
-                try:
-                    response = requests.post(
-                        f"{API_BASE_URL}/predict",
-                        json={"text": job_text},
-                        timeout=90
-                    )
-                    response.raise_for_status()
-                    result = response.json()
-                    prediction = result["prediction"]
-                    confidence = result["confidence"]
-                    fraud_prob = result["fraud_probability"]
+            status = st.status("Running AI Analysis...", expanded=True)
 
-                    st.divider()
+            status.write("🧹 Cleaning text")
+            status.write("🌲 Running Random Forest")
+            status.write("🛡 Applying Rule Engine")
+            status.write("📈 Calculating fraud probability")
+            status.write("💡 Generating recommendation")
 
-                    if "Fake" in prediction:
-                        st.markdown('<div class="result-fake">🚨 FRAUDULENT JOB POSTING DETECTED</div>', unsafe_allow_html=True)
+            status.update(
+                label="Analysis Complete",
+                state="complete"
+            )
+            try:
+                response = requests.post(
+                    f"{API_BASE_URL}/predict",
+                    json={"text": job_text},
+                    timeout=90
+                )
+                response.raise_for_status()
+                result = response.json()
+                prediction = result["prediction"]
+                confidence = result["confidence"]
+                fraud_prob = result["fraud_probability"]
+
+                st.divider()
+
+                if "Fake" in prediction:
+                    st.markdown('<div class="result-fake">🚨 FRAUDULENT JOB POSTING DETECTED</div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="result-real">✅ THIS JOB APPEARS LEGITIMATE</div>', unsafe_allow_html=True)
+
+                st.markdown("###")
+                m1, m2, m3, m4 = st.columns(4)
+                with m1:
+                    verdict_icon = "⚠️ Fake" if "Fake" in prediction else "✅ Real"
+                    st.markdown(f'<div class="metric-card"><div class="metric-label">Verdict</div><div class="metric-value">{verdict_icon}</div></div>', unsafe_allow_html=True)
+                with m2:
+                    st.markdown(f'<div class="metric-card"><div class="metric-label">Fraud Risk</div><div class="metric-value">{fraud_prob}%</div></div>', unsafe_allow_html=True)
+                with m3:
+                    st.markdown(f'<div class="metric-card"><div class="metric-label">Confidence</div><div class="metric-value">{confidence}</div></div>', unsafe_allow_html=True)
+                with m4:
+                    st.markdown(f'<div class="metric-card"><div class="metric-label">Rule Score</div><div class="metric-value">{result["risk_score"]}</div></div>', unsafe_allow_html=True)
+
+                st.markdown("###")
+                st.markdown("### 📊 Risk Assessment")
+
+                # Create gauge chart
+                fig = go.Figure(go.Indicator(
+                    mode="gauge+number",
+                    value=fraud_prob,
+                    title={"text": "Fraud Risk", "font": {"size": 24}},
+                    number={"font": {"size": 40}},
+                    gauge={
+                        "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "#94A3B8"},
+                        "bar": {"color": "#7C5CFF"},
+                        "steps": [
+                            {"range": [0, 25], "color": "#22c55e"},
+                            {"range": [25, 50], "color": "#eab308"},
+                            {"range": [50, 75], "color": "#f97316"},
+                            {"range": [75, 100], "color": "#ef4444"}
+                        ],
+                        "threshold": {
+                            "line": {"color": "red", "width": 4},
+                            "thickness": 0.75,
+                            "value": fraud_prob
+                        }
+                    }
+                ))
+
+                fig.update_layout(
+                    height=250,
+                    margin=dict(l=20, r=20, t=50, b=20),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font={"color": "#E2E8F0"}
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+                found_flags = check_red_flags(job_text)
+                
+                st.markdown("###")
+                st.markdown("### 🤖 AI Analysis")
+                col1, col2 = st.columns([1, 1])
+                
+                with col1:
+                    st.markdown("#### 🚩 Rule-Based Findings")
+                    if result["matched_keywords"]:
+                        for keyword in result["matched_keywords"]:
+                            st.markdown(
+                                f"""
+                                <div class="flag-item">
+                                    ⚠️ <b>{keyword.title()}</b>
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
                     else:
-                        st.markdown('<div class="result-real">✅ THIS JOB APPEARS LEGITIMATE</div>', unsafe_allow_html=True)
+                        st.success("No suspicious keywords detected.")
 
-                    st.markdown("###")
-                    m1, m2, m3, m4 = st.columns(4)
-                    with m1:
-                        verdict_icon = "⚠️ Fake" if "Fake" in prediction else "✅ Real"
-                        st.markdown(f'<div class="metric-card"><div class="metric-label">Verdict</div><div class="metric-value">{verdict_icon}</div></div>', unsafe_allow_html=True)
-                    with m2:
-                        st.markdown(f'<div class="metric-card"><div class="metric-label">Confidence</div><div class="metric-value">{confidence}</div></div>', unsafe_allow_html=True)
-                    with m3:
-                        st.markdown(f'<div class="metric-card"><div class="metric-label">Fraud Risk</div><div class="metric-value">{fraud_prob}%</div></div>', unsafe_allow_html=True)
-                    with m4:
-                        st.markdown(f'<div class="metric-card"><div class="metric-label">Risk Score</div><div class="metric-value">{result["risk_score"]}</div></div>', unsafe_allow_html=True)
-
-                    st.markdown("###")
-                    st.markdown("### 📊 Risk Assessment")
-
-                    if fraud_prob < 25:
-                        st.success(f"🟢 Low Risk ({fraud_prob}%)")
-                    elif fraud_prob < 50:
-                        st.info(f"🔵 Moderate Risk ({fraud_prob}%)")
-                    elif fraud_prob < 75:
-                        st.warning(f"🟠 High Risk ({fraud_prob}%)")
+                with col2:
+                    st.markdown("#### 📂 Risk Categories")
+                    if result["matched_rules"]:
+                        for rule in result["matched_rules"]:
+                            emoji = {
+                                "Payment Fee": "💰",
+                                "WhatsApp": "📞",
+                                "Urgent Hiring": "⚡",
+                                "Earn 2 Lakh": "💵"
+                            }.get(rule, "⚠️")
+                            st.info(f"{emoji} {rule.title()}")
                     else:
-                        st.error(f"🔴 Critical Risk ({fraud_prob}%)")
+                        st.success("No risky categories found.")
 
-                    st.progress(fraud_prob / 100)
-
-                    found_flags = check_red_flags(job_text)
+                # AI Recommendation section
+                st.markdown("###")
+                st.markdown("### 🤖 AI Recommendation")
+                
+                if fraud_prob >= 75:
+                    st.error("""
+                    ### 🚨 High Scam Probability
                     
-                    st.markdown("###")
-                    st.markdown("### 🤖 AI Analysis")
-                    col1, col2 = st.columns([1, 1])
+                    We strongly recommend:
                     
-                    with col1:
-                        st.markdown("#### 🚩 Rule-Based Findings")
-                        if result["matched_keywords"]:
-                            for keyword in result["matched_keywords"]:
-                                st.markdown(
-                                    f"""
-                                    <div class="flag-item">
-                                        ⚠️ <b>{keyword.title()}</b>
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True
-                                )
-                        else:
-                            st.success("No suspicious keywords detected.")
-
-                    with col2:
-                        st.markdown("#### 📂 Risk Categories")
-                        if result["matched_rules"]:
-                            for rule in result["matched_rules"]:
-                                emoji = {
-                                    "payment": "💰",
-                                    "contact": "📞",
-                                    "urgency": "⚡",
-                                    "salary": "💵"
-                                }.get(rule, "⚠️")
-                                st.info(f"{emoji} {rule.title()}")
-                        else:
-                            st.success("No risky categories found.")
-
-                    # AI Recommendation section
-                    st.markdown("###")
-                    st.markdown("### 🤖 AI Recommendation")
+                    - ❌ Do not pay any registration fee
+                    - ❌ Avoid sharing personal documents
+                    - ❌ Verify the company website
+                    - ❌ Search company reviews
+                    - ❌ Apply only through official portals
+                    """)
+                elif fraud_prob >= 50:
+                    st.warning("""
+                    ### ⚠ Proceed Carefully
                     
-                    if fraud_prob >= 75:
-                        st.error("""
-                        ### 🚨 High Scam Probability
-                        
-                        We strongly recommend:
-                        
-                        - ❌ Do not pay any registration fee
-                        - ❌ Avoid sharing personal documents
-                        - ❌ Verify the company website
-                        - ❌ Search company reviews
-                        - ❌ Apply only through official portals
-                        """)
-                    elif fraud_prob >= 50:
-                        st.warning("""
-                        ### ⚠ Proceed Carefully
-                        
-                        - Verify recruiter identity
-                        - Cross-check salary claims
-                        - Confirm company registration
-                        - Never send money before joining
-                        """)
-                    else:
-                        st.success("""
-                        ### ✅ Appears Relatively Safe
-                        
-                        No major scam indicators were detected.
-                        
-                        Still verify:
-                        
-                        - Company website
-                        - Recruiter email
-                        - LinkedIn company page
-                        - Official job portal
-                        """)
+                    - Verify recruiter identity
+                    - Cross-check salary claims
+                    - Confirm company registration
+                    - Never send money before joining
+                    """)
+                else:
+                    st.success("""
+                    ### ✅ Appears Relatively Safe
+                    
+                    No major scam indicators were detected.
+                    
+                    Still verify:
+                    
+                    - Company website
+                    - Recruiter email
+                    - LinkedIn company page
+                    - Official job portal
+                    """)
 
-                except requests.exceptions.Timeout:
-                    st.error(
-                        "The backend is still waking up on Render's free tier. "
-                        "Please wait about a minute and try again."
-                    )
-                except requests.exceptions.RequestException as e:
-                    st.error(f"API request failed:\n{e}")
-                except Exception as e:
-                    st.exception(e)
+            except requests.exceptions.Timeout:
+                st.error(
+                    "The backend is still waking up on Render's free tier. "
+                    "Please wait about a minute and try again."
+                )
+            except requests.exceptions.RequestException as e:
+                st.error(f"API request failed:\n{e}")
+            except Exception as e:
+                st.exception(e)
     
     st.markdown(
         '<div class="footer">🛡️ FraudScan AI — Powered by Random Forest + FastAPI + Streamlit | Trained on 17,000+ job postings</div>',
