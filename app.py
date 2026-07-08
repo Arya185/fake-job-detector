@@ -119,35 +119,39 @@ div[data-testid="stAlert"] [role="img"] {
 
 /* Hero Section */
 .hero-wrapper {
-    text-align: center;
-    padding: 60px 0 35px;
+    text-align: left !important;
+    padding: 40px 0 25px 0 !important;
+    margin: 0 !important;
 }
 
 .hero-title {
-    font-size: 58px;
+    font-size: 46px !important;
     font-weight: 800;
-    letter-spacing: -1.5px;
-    line-height: 1.1;
+    letter-spacing: -1.2px;
+    line-height: 1.15;
     margin-bottom: 12px;
     background: linear-gradient(135deg, #FFF 30%, #7C5CFF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-align: left !important;
 }
 
 .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 1.2rem !important;
     font-weight: 500;
     color: #E2E8F0;
     line-height: 1.4;
     margin-bottom: 16px;
+    text-align: left !important;
 }
 
 .hero-desc {
-    width: 65%;
-    margin: auto;
-    font-size: 1rem;
+    width: 80% !important;
+    margin: 0 !important;
+    font-size: 0.95rem !important;
     color: #94A3B8;
-    line-height: 1.7;
+    line-height: 1.6;
+    text-align: left !important;
 }
 
 /* Findings and Signals Cards */
