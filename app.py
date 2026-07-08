@@ -740,7 +740,7 @@ if page == "📊 Analytics Console":
             if error:
                 st.error(f"❌ **Database Telemetry Error:** `{error}`")
                 st.info("💡 **Database Setup Guide:** Ensure your MySQL credentials are set in environment variables and the `predictions` table exists.")
-            elif "message" in data and "Database logging disabled" in data.get("message", ""):
+            elif "message" in data and data.get("message") and "Database logging disabled" in data.get("message"):
                 # Database Setup Tutorial Component
                 st.warning("⚠️ **Database Logging is Currently Disabled**")
                 with st.container(border=True):
