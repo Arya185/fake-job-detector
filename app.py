@@ -554,7 +554,8 @@ if page == "🔍 Detector Panel":
             st.warning("⚠️ **Diagnostics Notice:** The visual frontend cannot verify text or execute live scans because the FastAPI engine is unreachable.")
             error_message = """
             ### How to Start the Engine:
-            Run the following command in your terminal workspace:
+            Run the following command in your terminal workspace to restore live connection telemetry:
             ```bash
             python3 -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
-            """
+            ```
+            """, unsafe_allow_html=True) # <--- ADD THIS LINE
