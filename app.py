@@ -527,6 +527,43 @@ if page == "🔍 Detector Panel":
                 if reset:
                     st.session_state.job_text = ""
                     st.rerun()
+            
+            # --- SCAN EXECUTION LOGIC ---
+            if analyze:
+                st.write("Button clicked")  # temporary debug
+                try:
+                    if not uploaded_file and not job_text:
+                        st.error("Please enter text or upload a file first.")
+                    else:
+                        # Use either uploaded file or text input
+                        if uploaded_file is not None:
+                            text = uploaded_file.read().decode("utf-8", errors="ignore")
+                            st.write("File loaded successfully")
+                        else:
+                            text = job_text
+                            st.write("Text loaded successfully")
+                        
+                        # Check if API is online
+                        if not is_api_online:
+                            st.error("API is offline. Please start the FastAPI backend.")
+                        else:
+                            response = requests.post(
+                                f"{API_BASE_URL}/predict",
+                                json={"text": text},
+                                timeout=30
+                            )
+                            
+                            st.write("Status code:", response.status_code)
+                            st.write("Response text:", response.text)
+                            
+                            if response.status_code == 200:
+                                result = response.json()
+                                st.success("Scan completed")
+                                st.json(result)
+                            else:
+                                st.error(f"API error: {response.status_code}")
+                except Exception as e:
+                    st.error(f"Scan failed: {e}")
 
     with col_info:
         with st.container(border=True):
