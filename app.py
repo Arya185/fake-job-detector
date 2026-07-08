@@ -25,6 +25,14 @@ st.markdown("""
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* Prevent height limits and ensure scrollability on deployment layouts */
+html, body, [data-testid="stAppViewContainer"], .stApp, .stMain, .stMainBlockContainer, .block-container {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
 /* Background & main card layouts */
 .stApp {
     background-color: #080B11 !important;
@@ -286,6 +294,7 @@ with st.sidebar:
     st.write("⚡ FastAPI Endpoint Handler")
     st.write("📊 TF-IDF (15,000 Features)")
     st.write("🛡️ Risk Rule Engine")
+    st.caption("Version 2.0 (Forensic Edition)")
 
 # ---- DETECTOR PANEL PAGE ----
 if page == "🔍 Detector Panel":
@@ -731,38 +740,36 @@ if page == "📊 Analytics Console":
             if error:
                 st.error(f"❌ **Database Telemetry Error:** `{error}`")
                 st.info("💡 **Database Setup Guide:** Ensure your MySQL credentials are set in environment variables and the `predictions` table exists.")
-                msg = data.get("message") or ""
-
-                if "message" in data and "Database logging disabled" in msg:
-                    # Database Setup Tutorial Component
-                    st.warning("⚠️ **Database Logging is Currently Disabled**")
-                    with st.container(border=True):
-                        st.markdown('<div class="saas-card-header">⚙️ How to Enable Prediction Logging & Analytics</div>', unsafe_allow_html=True)
-                        st.markdown("""
-                        <p style="font-size:0.95rem; line-height:1.6; color:#94A3B8;">
-                            To unlock historical analysis features, configure the backend FastAPI application to store outputs inside a MySQL database:
-                        </p>
-                        <ol style="color:#E2E8F0; font-size:0.9rem; line-height:1.8; padding-left:20px;">
-                            <li>Enable database logging in the backend by setting <b><code>ENABLE_DB_LOGGING=true</code></b> inside your backend environment configuration.</li>
-                            <li>Provide your MySQL database credentials:
-                                <ul style="padding-left:20px;">
-                                    <li><code>MYSQL_HOST</code> (e.g. <code>localhost</code>)</li>
-                                    <li><code>MYSQL_PORT</code> (default: <code>3306</code>)</li>
-                                    <li><code>MYSQL_USER</code> (e.g. <code>root</code>)</li>
-                                    <li><code>MYSQL_PASSWORD</code></li>
-                                    <li><code>MYSQL_DATABASE</code> (e.g. <code>fake_job_detector</code>)</li>
-                                </ul>
-                            </li>
-                            <li>Connect to your database and execute the table schema creation query:</li>
-                        </ol>
-                        <pre style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.06); padding:15px; border-radius:8px; color:#A78BFA; font-size:0.85rem;"><code>CREATE TABLE predictions (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            input_text VARCHAR(500) NOT NULL,
-                            prediction VARCHAR(50) NOT NULL,
-                            fraud_probability FLOAT NOT NULL,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                        );</code></pre>
-                        """, unsafe_allow_html=True)
+            elif "message" in data and "Database logging disabled" in data.get("message", ""):
+                # Database Setup Tutorial Component
+                st.warning("⚠️ **Database Logging is Currently Disabled**")
+                with st.container(border=True):
+                    st.markdown('<div class="saas-card-header">⚙️ How to Enable Prediction Logging & Analytics</div>', unsafe_allow_html=True)
+                    st.markdown("""
+                    <p style="font-size:0.95rem; line-height:1.6; color:#94A3B8;">
+                        To unlock historical analysis features, configure the backend FastAPI application to store outputs inside a MySQL database:
+                    </p>
+                    <ol style="color:#E2E8F0; font-size:0.9rem; line-height:1.8; padding-left:20px;">
+                        <li>Enable database logging in the backend by setting <b><code>ENABLE_DB_LOGGING=true</code></b> inside your backend environment configuration.</li>
+                        <li>Provide your MySQL database credentials:
+                            <ul style="padding-left:20px;">
+                                <li><code>MYSQL_HOST</code> (e.g. <code>localhost</code>)</li>
+                                <li><code>MYSQL_PORT</code> (default: <code>3306</code>)</li>
+                                <li><code>MYSQL_USER</code> (e.g. <code>root</code>)</li>
+                                <li><code>MYSQL_PASSWORD</code></li>
+                                <li><code>MYSQL_DATABASE</code> (e.g. <code>fake_job_detector</code>)</li>
+                            </ul>
+                        </li>
+                        <li>Connect to your database and execute the table schema creation query:</li>
+                    </ol>
+                    <pre style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.06); padding:15px; border-radius:8px; color:#A78BFA; font-size:0.85rem;"><code>CREATE TABLE predictions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    input_text VARCHAR(500) NOT NULL,
+    prediction VARCHAR(50) NOT NULL,
+    fraud_probability FLOAT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+                    """, unsafe_allow_html=True)
             elif not history:
                 with st.container(border=True):
                     st.markdown("""
@@ -916,6 +923,9 @@ if page == "⚙️ System Status":
     """, unsafe_allow_html=True)
     st.divider()
 
+    # Query fresh health status specifically for the status page rendering to avoid stale state mismatches
+    status_health_data, status_api_online = query_api_health()
+
     with st.container(border=True):
         st.markdown('<div class="saas-card-header">📡 API Communication Connection</div>', unsafe_allow_html=True)
         
@@ -946,4 +956,42 @@ if page == "⚙️ System Status":
                 Start the backend FastAPI server in your terminal:
                 ```bash
                 python3 -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
-                """, unsafe_allow_html=True)
+                ```
+                Verify your environment `API_BASE_URL` points to `http://127.0.0.1:8000`.
+                """)
+        with c_ping:
+            if api_ok:
+                st.metric("📶 Live Connection Latency (RTT)", f"{t_latency} ms")
+            else:
+                st.metric("📶 Live Connection Latency (RTT)", "N/A (Offline)")
+
+    with st.container(border=True):
+        st.markdown('<div class="saas-card-header">🏥 Health Telemetry Details</div>', unsafe_allow_html=True)
+        if status_health_data and status_api_online:
+            th1, th2, th3 = st.columns(3)
+            with th1:
+                mysql_connected = "Active 🟢" if status_health_data.get("database_logging") else "Disabled 🟡"
+                st.metric("MySQL State", mysql_connected)
+            with th2:
+                st.metric("FastAPI Internal Status", status_health_data.get("status", "Unknown").upper())
+            with th3:
+                st.metric("Model Directory Path", status_health_data.get("model_dir", "Unknown"))
+                
+            st.markdown("<p style='font-size:0.85rem; color:#64748B; margin-top:15px;'>Health metrics are verified directly from backend configuration.</p>", unsafe_allow_html=True)
+            if not status_health_data.get("database_logging"):
+                st.warning("⚠️ **Notice:** Database prediction logging is currently set to `false`. Prediction logs will not be recorded in MySQL. Set `ENABLE_DB_LOGGING=true` in backend variables to store predictions.")
+        else:
+            st.warning("⚠️ Could not load telemetry because the FastAPI server is currently offline.")
+
+    with st.container(border=True):
+        st.markdown('<div class="saas-card-header">🧩 Threat Classification Framework</div>', unsafe_allow_html=True)
+        st.markdown("""
+        #### Classifier Inference Design
+        - **Classifier Engine**: Scikit-Learn Random Forest Classifier (200 trees, max depth of 20)
+        - **Preprocessing Pipeline**: Convert input to lower, strip HTML layout symbols, remove numbers/special characters, and run TF-IDF Vectorizer (15,000 feature limit, 1 to 3 n-gram range).
+        - **Risk Categories & Heuristic Weights**:
+          - `payment` (upfront deposit, joining fee, processing fee, security deposit) ➜ **+30 Risk Points**
+          - `contact` (whatsapp, telegram, DM me, personal number) ➜ **+20 Risk Points**
+          - `urgency` (urgent hiring, apply immediately, limited seats) ➜ **+15 Risk Points**
+          - `salary` (earn daily, easy income, earn lakh) ➜ **+10 Risk Points**
+        """)
