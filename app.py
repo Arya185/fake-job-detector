@@ -332,6 +332,8 @@ def query_api_health():
         response = requests.get(f"{API_BASE_URL}/health", timeout=3)
         if response.status_code == 200:
             return response.json(), True
+        else:
+            return None, False
     except Exception:
         return None, False
 
@@ -550,8 +552,8 @@ if page == "🔍 Detector Panel":
         with st.container(border=True):
             st.markdown("<div class='saas-card-header' style='border-color:rgba(239,68,68,0.25); color:#EF4444;'>🔴 Connection Paused — API Offline</div>", unsafe_allow_html=True)
             st.warning("⚠️ **Diagnostics Notice:** The visual frontend cannot verify text or execute live scans because the FastAPI engine is unreachable.")
-            st.markdown("""
+            error_message = """
             ### How to Start the Engine:
-            Run the following command in your terminal workspace to restore live connection telemetry:
+            Run the following command in your terminal workspace:
             ```bash
             python3 -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
