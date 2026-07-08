@@ -25,9 +25,22 @@ st.markdown("""
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Prevent height limits and ensure scrollability on deployment layouts */
-html, body, [data-testid="stAppViewContainer"], .stApp, .stMain, .stMainBlockContainer, .block-container {
-    height: auto !important;
+/* Prevent app viewport scroll to keep sidebar fixed and fully extended */
+[data-testid="stAppViewContainer"], .stApp {
+    height: 100vh !important;
+    overflow: hidden !important;
+}
+
+/* Style the sidebar explicitly to span full screen height */
+[data-testid="stSidebar"] {
+    min-height: 100vh !important;
+    height: 100vh !important;
+    background-color: #0B0F19 !important;
+}
+
+/* Allow only the main content panel to scroll */
+.stMain, [data-testid="stMainBlockContainer"], .block-container {
+    height: 100% !important;
     min-height: 100vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
