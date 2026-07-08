@@ -286,7 +286,6 @@ with st.sidebar:
     st.write("⚡ FastAPI Endpoint Handler")
     st.write("📊 TF-IDF (15,000 Features)")
     st.write("🛡️ Risk Rule Engine")
-    st.caption("Version 2.0 (Forensic Edition)")
 
 # ---- DETECTOR PANEL PAGE ----
 if page == "🔍 Detector Panel":
