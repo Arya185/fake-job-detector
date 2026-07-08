@@ -1,10 +1,3 @@
-I have worked on it take a look at it but there is some errors:
-File "/app/app.py", line 553
-              st.markdown("""
-                          ^
-SyntaxError: unterminated triple-quoted string literal (detected at line 557)
-
-
 import streamlit as st
 import requests
 import pandas as pd
